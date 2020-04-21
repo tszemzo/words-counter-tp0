@@ -124,3 +124,85 @@ Distinto es el caso del segundo leak en donde directamente se pierde la referenc
 ![valgr](assets/paso4/long-filename.png)
 
 El error que menciona valgrind en este caso, es un buffer overflow en la operación memcpy del main (linea 13), en donde el filename del input file name es muy largo y por eso lanza el error. Una forma de evitarlo sería chequear que el destination buffer tenga suficiente espacio para alojar al source buffer.
+
+**d. ¿Podría solucionarse este error utilizando la función strncpy ? ¿Qué hubiera ocurrido con la ejecución de la prueba?**
+
+Si, podría solucionarse, en el sentido de que no explotaría. Ahora bien, strncpy copiaria los N caracteres siendo N el largo del parámetro source (como se usa en el programa) pero no sería nada seguro dado que no es null-terminated, es decir, no agrega el \0 al final de la copia lo cual podría generar problemas en caso de que el src sea mayor al buffer destino. Si es menor, simplemente haría padding agregando el “\0”.
+
+**e. Explicar de qué se trata un segmentation fault y un buffer overflow.**
+
+Un segmentation fault se da cuando se trata de leer o escribir en un área de memoria ilegal. 
+La memoria de un programa está dividida en distintos segmentos (data, text, stack, heap) entonces por ejemplo un seg fault puede darse cuando intentamos referenciar una variable (data segment) en un segmento que no es el de data, o cuando usamos un puntero sin definirlo previamente, etc. 
+
+Ahora, cuando hablamos de buffer overflow, nos referimos a cuando uno quiere realizar una operación de escritura sobre un buffer en el cual nos estamos pasando de su límite. Por ejemplo, si nosotros tenemos un char array[10], nuestro limite sera array[9], si nosotros queremos escribir más allá de ese límite estaremos en un buffer overflow.
+
+### Paso 5
+
+**a. Describa en breves palabras las correcciones realizadas respecto de la versión anterior.**
+
+Se elimina el memcpy que mencionabamos en el paso anterior que corría riesgo de que aparezca un buffer overflow. Y se agrega en el main el fclose, para cerrar el filedescriptor correspondiente. Luego, en el .c en vez de alocar memoria se define el string con los delimitadores como un array lo cual veo mucho mejor.
+
+**b. Describa el motivo por el que fallan las prueba ‘Invalid File’ y ‘Single Word’. ¿Qué información entrega SERCOM para identificar el error? Realice una captura de pantalla.**
+
+Desde SERCOM, para la prueba Invalid FIle, tenemos dos casos: Correr y Valgrind-FailOnError. Para este paso, nos esta fallando solo el caso Correr, donde vemos que el detalle del error menciona: 'Se esperaba terminar con un código de retorno 1 pero se obtuvo 255’. Es decir, el codigo fallo pero no con el código de retorno esperado.
+
+Con respecto a la prueba 'Single Word', fallan los dos casos y podemos ver en las diferencias que lo que se esperaba era que ocurra un error, pero sin embargo la ejecución terminó con éxito. También nos muestra que la tarea Valgrind-FailOnError tiene su salida por Valgrind en donde vemos que quedaron dos file descriptors abiertos, por lo cual se está quejando. A continuación la captura:
+
+![paso5](assets/paso5/paso5.png)
+
+**c. Captura de pantalla de la ejecución del comando hexdump . ¿Cuál es el último carácter del archivo input_single_word.txt?**
+
+![hex](assets/paso5/hexdump.png)
+
+El ultimo caracter es la letra ‘d’ que su codigo ascii en hexadecimal es el 64.
+
+**d. Captura de pantalla con el resultado de la ejecución con gdb​ . Explique brevemente los comandos utilizados en gdb​ . ¿Por qué motivo el debugger no se detuvo en el breakpoint de la línea 45: self->words++; ?**
+
+Agrego capturas de pantalla e info en orden:
+
+**info functions:** como vemos en la captura nos lista las funciones disponibles en nuestro programa
+
+![info](assets/paso5/gdb-info.png)
+
+**list wordscounter_next_state:** en este caso list <function> nos muestra las primeras líneas de una función, como una preview.
+	
+![listwords](assets/paso5/list-wordscounter.png)
+
+**list:** Este comando imprime mas lineas, si previamente se hizo un list como fue en este caso, se imprimen mas lineas a continuacion de la última que se había mostrado.
+
+![list](assets/paso5/list.png)
+
+**break 45:** en este caso se setea un breakpoint en la línea 45. Un breakpoint es una forma de decirle a tu debugger (en este caso GDB): “quiero que pares en esta línea”. Para de esta manera, podes inspeccionar con más detalle alrededor de esta línea en el programa, sea variables, memoria, etc.
+
+![break](assets/paso5/break45.png)
+
+**run input_singe_word.txt:** corre nuestro programa con el archivo que le pasamos como input mostrándonos la salida como podemos ver en la captura.
+
+![run](assets/paso5/run.png)
+
+### Paso 6
+
+**a. Describa en breves palabras las correcciones realizadas respecto de la versión anterior.**
+
+Se cambio el número de error de -1 a 1 en el main. Luego, las delim_words se definieron como una constante en el file .c en vez de en la función. Y luego se agregó el strchr para comparar con los delimitadores en la lógica del próximo estado del wordscounter.
+
+**b. Captura de pantalla mostrando t​odas las entregas realizadas​ , tanto exitosas como fallidas.**
+
+Captura desde SERCOM:
+
+![run](assets/paso6/entregas.png)
+
+**c. Captura de pantalla mostrando la ejecución de la prueba ‘Single Word’ de forma local​ con las distintas variantes indicadas.**
+
+Corrida 1: make + input
+
+![run](assets/paso6/corrida1.png)
+
+Corrida 2: <input
+
+![run](assets/paso6/corrida2.png)
+
+Corrida 3: <input + >output
+
+![run](assets/paso6/corrida3.png)
+
