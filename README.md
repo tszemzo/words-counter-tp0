@@ -1,6 +1,8 @@
 # TP0 - Words Counter - Taller de Programacion 1
 Alumno: Tomas Szemzo - Padrón: 97771
 
+Link al Repositorio: https://github.com/tszemzo/words-counter-tp0
+
 ## Resolución del Trabajo
 
 ### Paso 0
