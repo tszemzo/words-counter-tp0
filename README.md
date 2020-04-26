@@ -21,11 +21,11 @@ Sin valgrind:
 
 Valgrind sirve para debuggear y detectar problemas con la memoria, es decir, hallar memory leaks (fugas). 
 
-La opción mas comun es la de memcheck que es la que viene por default. Esta detecta memoria no inicializada, fugas de memoria, lecturas o escrituras de memoria luego de ser liberadas o en áreas del stack que no corresponden, entre otros inconvenientes. Por otro lado, también se encuentran presentes otras opciones como: addrcheck, massif, helgrind, cachegrind, entre otras.
+La opción más comun es la de memcheck que es la que viene por default. Esta detecta memoria no inicializada, fugas de memoria, lecturas o escrituras de memoria luego de ser liberadas o en áreas del stack que no corresponden, entre otros inconvenientes. Por otro lado, también se encuentran presentes otras opciones como: addrcheck, massif, helgrind, cachegrind, entre otras.
 				
 **c. ¿Qué representa sizeof()? ¿Cuál sería el valor de salida de sizeof(char) y sizeof(int)?**
 
-Sizeof es una función que pretende devolver el número de bytes que ocupa cualquier estructura de datos que le pasemos por parámetro. El valor de salida de sizeof(char) sería de 1 (1 byte) mientras que sizeof(int) seria 4 (4 bytes).
+Sizeof es un operador que pretende devolver el número de bytes que ocupa cualquier estructura de datos que le pasemos por parámetro. El valor de salida de sizeof(char) sería de 1 (1 byte) mientras que sizeof(int) depende de la arquitectura y del compilador.
 		
 **d. ¿El sizeof() de una struct de C es igual a la suma del sizeof() de cada uno sus elementos? Justifique mediante un ejemplo.** 
 
@@ -39,11 +39,17 @@ No necesariamente. Por ejemplo si tenemos el siguiente struct:
 ```
 Su sizeof será igual a 8 en vez de 5 que es lo que sumarían sus elementos por separado. Esto se debe al padding que agrega el compilador, por motivos de performance. Esto podría evitarse usando *Packing* en el struct. En ese caso si nuestro size of sería igual a 5.
 
+Probá cuando tengas un rato qué pasa si usás un unsigned short en esa struct, o armando arrays. Te va a dar una idea más completa.
+
 **e. Investigar la existencia de los archivos estándar: STDIN, STDOUT, STDERR. Explicar brevemente su uso y cómo redirigirlos en caso de ser necesario (caracteres > y <) y como conectar la salida estándar de un proceso a la entrada estándar de otro con un pipe (carácter | ).**
 
 Stdin, stdout y stderr son son los tres canales standard para entrada, salida y salida de errores. Por default, el standard input es la lectura por teclado, mientras que el standard output y el standard error son imprimir por pantalla. Estos 3 punteros pueden ser usados como argumentos en funciones.
 
+Entiendo la idea, pero los flujos estándar no tienen nada que ver con el teclado y la pantalla.
+
 Mediante redirección (>, <) y piping ( | ) podemos conectar estos 3 canales entre programas y archivos para dirigir la data que queramos de modo de combinarlos para llegar al resultado que deseamos.
+
+Cómo se usa y cómo funciona cada uno? Investigá para qué sirve >>
 
 ### Paso 1
 
@@ -58,7 +64,7 @@ En orden:
 * Línea 47 de wordscounter: menciona que el else debería estar en la misma línea que la llave de cierre anterior, no en la línea siguiente. (style)
 * Línea 48 de wordscounter: falta un espacio luego del if para separar la condición del if(style)
 * Línea 53 de wordscounter: hay un espacio además previo al “;” que enuncia el fin de línea.
-* Línea 12 de main: recomienda usar snprintf en vez de strcpy.
+* Línea 12 de main: recomienda usar snprintf en vez de strcpy. Por qué?
 * Línea 15 de main: menciona que el else debería estar en la misma línea que la llave de cierre anterior, no en la línea siguiente. (style)
 * Línea 5 de wordscounter.h: la línea del comentario supera los 80 caracteres.
 
@@ -67,11 +73,15 @@ En orden:
 *Captura 2: stdouterr de la tarea: Compilar C99 Simple
 ![stdouterr](assets/paso1/err2.png)
 
-Aquí los errores de la generación del ejecutable parten de que en la línea 22 y a posteriori se quiere crear y utilizar el struct words counter junto con algunas funciones definidas en su módulo, pero este no se incluye en el main. Falta el #include del .h. Se trata de errores del linker dado que no puede resolver las dependencias dadas.
+Aquí los errores de la generación del ejecutable parten de que en la línea 22 y a continuación se quiere crear y utilizar el struct words counter junto con algunas funciones definidas en su módulo, pero este no se incluye en el main. Falta el #include del .h. Se trata de errores del linker dado que no puede resolver las dependencias dadas.
+
+El missing type es un error de compilación, mientras que los otros son warnings (fijate que empiezan con -W) que fueron tratados como errores en tiempo de compilación por el uso del flag -Werror.
 
 **c. ¿El sistema reportó algún WARNING? ¿Por qué?**
 
 No, son solo errores los que reporta el sistema.
+
+Lo mismo que en la anterior, sí hubo warnings pero se trataron como errores.
 
 ### Paso 2
 **a. Describa en breves palabras las correcciones realizadas respecto de la versión anterior.**
@@ -97,6 +107,8 @@ En orden:
 * línea 30 del wordscounter.c: falta hacer el #include <stdlib.h> por eso no puede llamar a malloc.
 
 Son todos errores del linker.
+No, son de nuevo errores de compilación y warnings tratados como error en tiempo de compilación.
+El caso de malloc es un tanto especial, ya que se debe a que existe una definición de malloc que devuelve int, y como el código está tratando de usar una que devuelve void*, el compilador te recomienda que incluyas el header donde está declarada esa segunda malloc.
 
 ### Paso 3
 
@@ -114,6 +126,7 @@ Aca el unico error que vemos es del linker, y ocurre dado que en la línea 27 de
 **a. Describa en breves palabras las correcciones realizadas respecto de la versión anterior.**
 
 El único cambio que hubo fue “implementar” la función destroy que nos estaba fallando anteriormente. En este caso, la función no hace nada pero está implementada, por lo que no falla la compilación.
+No sé si fue solamente coloquial, pero lo que pasa a no fallar es el linkeo.
 
 **b. Captura de pantalla del resultado de ejecución con Valgrind de la prueba ‘TDA’. Describir los errores reportados por Valgrind.**
 ![valgr](assets/paso4/paso4.png)
@@ -135,6 +148,7 @@ Si, podría solucionarse, en el sentido de que no explotaría. Ahora bien, strnc
 
 Un segmentation fault se da cuando se trata de leer o escribir en un área de memoria ilegal. 
 La memoria de un programa está dividida en distintos segmentos (data, text, stack, heap) entonces por ejemplo un seg fault puede darse cuando intentamos referenciar una variable (data segment) en un segmento que no es el de data, o cuando usamos un puntero sin definirlo previamente, etc. 
+El ejemplo del data segment no está bien, sino no podrías usar ninguna variable static.
 
 Ahora, cuando hablamos de buffer overflow, nos referimos a cuando uno quiere realizar una operación de escritura sobre un buffer en el cual nos estamos pasando de su límite. Por ejemplo, si nosotros tenemos un char array[10], nuestro limite sera array[9], si nosotros queremos escribir más allá de ese límite estaremos en un buffer overflow.
 
